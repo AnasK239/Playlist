@@ -30,8 +30,15 @@ public class PlaylistController {
     }
 
 
-
-
+    @PostMapping("/{playlistId}/songs/{songId}")
+    public ResponseEntity<Void> addSongToPlaylist(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID playlistId,
+            @PathVariable UUID songId
+    ) {
+        playlistService.addSongToPlaylist(userId, playlistId, songId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 
 
 }

@@ -11,4 +11,6 @@ public interface IPlaylistService {
 
     PlaylistResponse createPlaylist(UUID userId  , CreatePlaylistRequest request);
 
+    void addSongToPlaylist(UUID userId, UUID playlistId, UUID songId);
+
 }
