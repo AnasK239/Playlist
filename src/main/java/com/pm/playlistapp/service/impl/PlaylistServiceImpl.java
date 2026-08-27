@@ -3,10 +3,12 @@ package com.pm.playlistapp.service.impl;
 import com.pm.playlistapp.dto.CreatePlaylistRequest;
 import com.pm.playlistapp.dto.PageResponse;
 import com.pm.playlistapp.dto.PlaylistResponse;
+import com.pm.playlistapp.dto.PlaylistSongResponse;
 import com.pm.playlistapp.exception.ForbiddenOperationException;
 import com.pm.playlistapp.exception.ResourceNotFoundException;
 import com.pm.playlistapp.mapper.PageResponseMapper;
 import com.pm.playlistapp.mapper.PlaylistResponseMapper;
+import com.pm.playlistapp.mapper.PlaylistSongResponseMapper;
 import com.pm.playlistapp.models.Playlist;
 import com.pm.playlistapp.models.PlaylistSong;
 import com.pm.playlistapp.models.Song;
@@ -19,6 +21,7 @@ import com.pm.playlistapp.service.IPlaylistService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,15 +38,17 @@ public class PlaylistServiceImpl implements IPlaylistService {
 
     private final PlaylistResponseMapper playlistResponseMapper;
     private final PageResponseMapper pageResponseMapper;
+    private final PlaylistSongResponseMapper playlistSongResponseMapper;
 
 
-    public PlaylistServiceImpl(PlaylistRepository playlistRepository, UserRepository userRepository, SongRepository songRepository, PlaylistSongRepository playlistSongRepository, PlaylistResponseMapper playlistResponseMapper, PageResponseMapper pageResponseMapper) {
+    public PlaylistServiceImpl(PlaylistRepository playlistRepository, UserRepository userRepository, SongRepository songRepository, PlaylistSongRepository playlistSongRepository, PlaylistResponseMapper playlistResponseMapper, PageResponseMapper pageResponseMapper, PlaylistSongResponseMapper playlistSongResponseMapper) {
         this.playlistRepository = playlistRepository;
         this.userRepository = userRepository;
         this.songRepository = songRepository;
         this.playlistSongRepository = playlistSongRepository;
         this.playlistResponseMapper = playlistResponseMapper;
         this.pageResponseMapper = pageResponseMapper;
+        this.playlistSongResponseMapper = playlistSongResponseMapper;
     }
 
     @Override
@@ -95,4 +100,30 @@ public class PlaylistServiceImpl implements IPlaylistService {
         return pageResponseMapper.toPageResponse(playlistPage, content);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PlaylistSongResponse> getPlaylistSongs(UUID userId, UUID playlistId, int page, int size) {
+
+        Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
+                () -> new ResourceNotFoundException("Playlist" , playlistId)
+        );
+
+        if(!playlist.getUser().getId().equals(userId)) {
+            throw new ForbiddenOperationException("You do not have permission to access this playlist");
+        }
+
+        Sort sort = Sort.by(Sort.Order.asc("position"), Sort.Order.asc("id"));
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<PlaylistSong> playlistSongsPage =
+                playlistSongRepository.findSongsByPlaylistId(playlistId , pageable);
+
+        List<PlaylistSongResponse> content = playlistSongsPage.getContent()
+                .stream()
+                .map(playlistSongResponseMapper::toSongResponse)
+                .toList();
+
+        return pageResponseMapper.toPageResponse(playlistSongsPage, content);
+    }
 }

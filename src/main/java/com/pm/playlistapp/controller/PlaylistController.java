@@ -3,6 +3,7 @@ package com.pm.playlistapp.controller;
 import com.pm.playlistapp.dto.CreatePlaylistRequest;
 import com.pm.playlistapp.dto.PageResponse;
 import com.pm.playlistapp.dto.PlaylistResponse;
+import com.pm.playlistapp.dto.PlaylistSongResponse;
 import com.pm.playlistapp.service.IPlaylistService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -57,6 +58,30 @@ public class PlaylistController {
             int size
     ) {
         PageResponse<PlaylistResponse> response = playlistService.getUserPlaylists(userId, page, size);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{playlistId}/songs")
+    public ResponseEntity<PageResponse<PlaylistSongResponse>> getPlaylistSongs(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID playlistId,
+
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "Page must be zero or greater")
+            int page,
+
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "Size must be at least 1")
+            @Max(value = 100, message = "Size must not exceed 100")
+            int size
+    ) {
+
+        PageResponse<PlaylistSongResponse> response = playlistService.getPlaylistSongs(
+                userId,
+                playlistId,
+                page,
+                size
+        );
         return ResponseEntity.ok(response);
     }
 }

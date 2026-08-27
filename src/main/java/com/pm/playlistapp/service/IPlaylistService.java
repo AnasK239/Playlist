@@ -3,6 +3,7 @@ package com.pm.playlistapp.service;
 import com.pm.playlistapp.dto.CreatePlaylistRequest;
 import com.pm.playlistapp.dto.PageResponse;
 import com.pm.playlistapp.dto.PlaylistResponse;
+import com.pm.playlistapp.dto.PlaylistSongResponse;
 
 
 import java.util.UUID;
@@ -16,4 +17,10 @@ public interface IPlaylistService {
 
     PageResponse<PlaylistResponse> getUserPlaylists(UUID userId, int page, int size);
 
+    PageResponse<PlaylistSongResponse> getPlaylistSongs(
+            UUID userId,
+            UUID playlistId,
+            int page,
+            int size
+    );
 }
