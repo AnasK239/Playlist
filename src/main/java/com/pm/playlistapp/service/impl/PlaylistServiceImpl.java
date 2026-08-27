@@ -1,9 +1,11 @@
 package com.pm.playlistapp.service.impl;
 
 import com.pm.playlistapp.dto.CreatePlaylistRequest;
+import com.pm.playlistapp.dto.PageResponse;
 import com.pm.playlistapp.dto.PlaylistResponse;
 import com.pm.playlistapp.exception.ForbiddenOperationException;
 import com.pm.playlistapp.exception.ResourceNotFoundException;
+import com.pm.playlistapp.mapper.PageResponseMapper;
 import com.pm.playlistapp.mapper.PlaylistResponseMapper;
 import com.pm.playlistapp.models.Playlist;
 import com.pm.playlistapp.models.PlaylistSong;
@@ -14,9 +16,13 @@ import com.pm.playlistapp.repository.PlaylistSongRepository;
 import com.pm.playlistapp.repository.SongRepository;
 import com.pm.playlistapp.repository.UserRepository;
 import com.pm.playlistapp.service.IPlaylistService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,14 +34,16 @@ public class PlaylistServiceImpl implements IPlaylistService {
     private final PlaylistSongRepository playlistSongRepository;
 
     private final PlaylistResponseMapper playlistResponseMapper;
+    private final PageResponseMapper pageResponseMapper;
 
 
-    public PlaylistServiceImpl(PlaylistRepository playlistRepository, UserRepository userRepository, SongRepository songRepository, PlaylistSongRepository playlistSongRepository, PlaylistResponseMapper playlistResponseMapper) {
+    public PlaylistServiceImpl(PlaylistRepository playlistRepository, UserRepository userRepository, SongRepository songRepository, PlaylistSongRepository playlistSongRepository, PlaylistResponseMapper playlistResponseMapper, PageResponseMapper pageResponseMapper) {
         this.playlistRepository = playlistRepository;
         this.userRepository = userRepository;
         this.songRepository = songRepository;
         this.playlistSongRepository = playlistSongRepository;
         this.playlistResponseMapper = playlistResponseMapper;
+        this.pageResponseMapper = pageResponseMapper;
     }
 
     @Override
@@ -71,6 +79,20 @@ public class PlaylistServiceImpl implements IPlaylistService {
 
         PlaylistSong playlistSong = new PlaylistSong(playlist, song, nextPosition);
         playlistSongRepository.save(playlistSong);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PlaylistResponse> getUserPlaylists(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Playlist> playlistPage = playlistRepository.findByUserId(userId , pageable);
+
+        List<PlaylistResponse> content = playlistPage.getContent().stream()
+                .map(playlistResponseMapper::toPlaylistResponse)
+                .toList();
+
+        return pageResponseMapper.toPageResponse(playlistPage, content);
     }
 
 }
