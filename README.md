@@ -15,6 +15,15 @@ For fast API testing checkout:
 - [Testing the Complete API Flow with Postman](#testing-the-complete-api-flow-with-postman)
 - [Seeded Test Data](#seeded-test-data)
 - [Endpoint Summary](#endpoint-summary)
+
+For Deep Dives checkout:
+- [Architecture](#architecture)
+- [Database Choice](#database-choice)
+- [Database Model](#database-model)
+- [Concurrency and Data Consistency](#concurrency-and-data-consistency)
+- [API Design Notes](#api-design-notes)
+- [Validation and Error Handling](#validation-and-error-handling)
+
 ---
 
 ## Table of Contents
@@ -1088,5 +1097,6 @@ I mainly used it for
 - the boring work such as writing this readme
 - searching for framework specific things i know exist but cant remember
 - improving the git commit messages
+- discussion on portability
 
 ---
